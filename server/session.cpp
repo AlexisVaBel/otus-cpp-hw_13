@@ -1,11 +1,11 @@
 #include "session.h"
-#include "../src_async/async.h"
+
 
 
 #include <string>
 
 
-Session::Session(boost::shared_ptr<boost::asio::io_service> io_service, void *id):m_socket(*io_service), m_id(id)
+Session::Session(boost::shared_ptr<boost::asio::io_service> io_service):m_socket(*io_service)
 {
 
 }
@@ -26,7 +26,7 @@ void Session::start()
 void Session::handle_read(const boost::system::error_code &ecode, size_t bytes)
 {
     if(!ecode){
-        async::receive(m_id, m_data, bytes);
+
         //  waiting for some next async read
         m_socket.async_read_some(boost::asio::buffer(m_data, max_length),
                                  boost::bind(&Session::handle_read, this,
@@ -37,7 +37,7 @@ void Session::handle_read(const boost::system::error_code &ecode, size_t bytes)
     }else{
         if( (boost::asio::error::eof == ecode)||
                 (boost::asio::error::connection_reset == ecode)){
-            async::disconnect(m_id);
+
         }
 
         delete this;

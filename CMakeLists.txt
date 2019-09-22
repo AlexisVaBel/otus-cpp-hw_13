@@ -18,7 +18,7 @@ include_directories("src_async")
 include_directories("serv")
 include_directories("db_struct")
 include_directories(${Boost_INCLUDE_DIR})
-link_directories(/usr/lib)
+#link_directories(/usr/lib)
 
 add_executable(${PROJECT_NAME} main.cpp server/session.cpp server/server.cpp)
 
@@ -33,7 +33,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_link_libraries(${PROJECT_NAME}        
         ${Boost_SYSTEM_LIBRARY}
-        async
+#        async
 )
 
 

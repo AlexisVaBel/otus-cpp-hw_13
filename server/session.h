@@ -15,7 +15,7 @@ using boost::asio::ip::tcp;
 class Session
 {
 public:
-    Session(boost::shared_ptr<boost::asio::io_service> io_service, void * id);
+    Session(boost::shared_ptr<boost::asio::io_service> io_service);
     tcp::socket &socket();
 
     void start();
@@ -25,10 +25,6 @@ private:
     tcp::socket m_socket;
     enum { max_length = 1024};
     char m_data[max_length];
-
-    void    *m_id;
-
-
 };
 
 #endif // SESSION_H
