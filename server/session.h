@@ -25,6 +25,10 @@ private:
     tcp::socket m_socket;
     enum { max_length = 1024};
     char m_data[max_length];
+
+
+
+
 };
 
 #endif // SESSION_H

@@ -1,5 +1,5 @@
 #include "session.h"
-
+#include "../src_async/async.h"
 
 
 #include <string>
@@ -40,7 +40,6 @@ void Session::handle_read(const boost::system::error_code &ecode, size_t bytes)
 
         }
 
-        delete this;
     }
 }
 
