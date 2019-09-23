@@ -1,13 +1,14 @@
 #include "session.h"
 #include "../src_async/async.h"
 
+#include <thread>
 
 #include <string>
 
 
 Session::Session(boost::shared_ptr<boost::asio::io_service> io_service):m_socket(*io_service)
 {
-
+   std::cout << std::this_thread::get_id() << std::endl;
 }
 
 tcp::socket &Session::socket()

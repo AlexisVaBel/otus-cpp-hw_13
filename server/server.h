@@ -4,11 +4,13 @@
 #include "session.h"
 #include <set>
 #include <memory>
+#include <thread>
 
 class Server
 {
 public:
     Server(boost::shared_ptr<boost::asio::io_service> io_service, short port);
+    ~Server();
 
     void handle_accept(std::shared_ptr<Session> session, const boost::system::error_code &error);
 
@@ -19,6 +21,8 @@ private:
     int m_totalConnected;
 
     std::shared_ptr<std::set<std::shared_ptr<Session>>> m_sesSet;
+
+    std::shared_ptr<std::vector<std::thread>>    m_threads;
 };
 
 #endif // SERVER_H
