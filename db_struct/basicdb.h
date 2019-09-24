@@ -4,6 +4,7 @@
 #include <memory>
 #include <algorithm>
 #include <tuple>
+#include <vector>
 #include <mutex>
 
 #include "basictable.h"
@@ -20,15 +21,28 @@ public:
         m_tables["B"] = std::make_shared<BasicTable>();
     };
 
-    bool insert (std::string strTable, size_t id, std::string str){
+    bool process_operations(const std::vector<std::string> &vct){
+        auto fstCmd = vct.begin();
+        if(fstCmd == vct.end()) return  false;
+        if(fstCmd->compare("insert") == 0 || fstCmd->compare("INSERT") == 0) return insert(vct.at(1), std::stoi(vct.at(2)), vct.at(3));
+        return false;
+    }
+
+    bool insert (const std::string strTable, size_t id, std::string str){
+        std::lock_guard<std::mutex> write_mutex(m_mutex_main);
         auto table = m_tables.find(strTable);
-        if(table == m_tables.end()) return false;
+        if(table == m_tables.end()) {
+//            throw std::runtime_error(DB_ERR_NOTABLE);
+            return false;
+        }
         return table->second->insert_to_table(id, str);
     }
 
     std::vector<std::tuple<size_t,std::string,std::string>> intersect(){
         std::vector<int> v_intersection;
         std::vector<std::tuple<size_t,std::string,std::string>> tpl;
+
+        std::lock_guard<std::mutex> read_mutex(m_mutex_main);
         auto ka = m_tables.at("A")->m_keys;
         auto kb = m_tables.at("B")->m_keys;
 
@@ -50,6 +64,10 @@ public:
     std::vector<std::tuple<size_t,std::string,std::string>> simm_difference(){
         std::vector<int> v_simm_difference;
         std::vector<std::tuple<size_t,std::string,std::string>> tpl;
+
+        std::lock_guard<std::mutex> read_mutex(m_mutex_main);
+
+
         auto ka = m_tables.at("A")->m_keys;
         auto kb = m_tables.at("B")->m_keys;
 
@@ -68,6 +86,7 @@ public:
     }
 
     void truncate(){
+        std::lock_guard<std::mutex> write_mutex(m_mutex_main);
         m_tables.at("A")->truncate();
         m_tables.at("B")->truncate();
     }

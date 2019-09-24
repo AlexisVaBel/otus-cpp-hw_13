@@ -2,32 +2,43 @@
 #define SESSION_H
 
 #include <iostream>
-
+#include <set>
 
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+
+#include "../threader/threadpool.h"
+#include "../db_struct/basicdb.h"
+
 
 
 
 using boost::asio::ip::tcp;
 
 
-class Session
+
+class Session: public std::enable_shared_from_this<Session>
 {
 public:
-    Session(boost::shared_ptr<boost::asio::io_service> io_service);
+    Session(boost::shared_ptr<boost::asio::io_service> ioService, std::shared_ptr<ThreadPool> threadPool, std::shared_ptr<BasicDB> db);
+    ~Session();
     tcp::socket &socket();
 
     void start();
+    void stop();
     void handle_read(const boost::system::error_code &ecode, size_t bytes);
-    void handle_write(const boost::system::error_code &ecode);
+    void handle_write(const boost::system::error_code &ecode, size_t bytes);
 private:
+    boost::shared_ptr<boost::asio::io_service> m_ioService;
     tcp::socket m_socket;
     enum { max_length = 1024};
-    char m_data[max_length];
+    char m_data[max_length];    
+
+    std::shared_ptr<ThreadPool> m_threadPool;
+    std::shared_ptr<BasicDB>    m_db;
 
 
-
+    void on_command();
 
 };
 
