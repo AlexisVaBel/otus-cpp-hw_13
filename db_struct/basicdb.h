@@ -6,6 +6,7 @@
 #include <tuple>
 #include <vector>
 #include <mutex>
+#include <algorithm>
 
 #include "basictable.h"
 
@@ -24,7 +25,12 @@ public:
     bool process_operations(const std::vector<std::string> &vct){
         auto fstCmd = vct.begin();
         if(fstCmd == vct.end()) return  false;
-        if(fstCmd->compare("insert") == 0 || fstCmd->compare("INSERT") == 0) return insert(vct.at(1), std::stoi(vct.at(2)), vct.at(3));
+        std::string str= vct.at(0);
+        std::transform(str.begin(), str.end(), str.begin(),
+            [](unsigned char c){ return std::tolower(c); });
+        std::cout << "vct size " << std::endl;
+        if((str.compare("insert") == 0 ) && vct.size() == 4) return insert(vct.at(1), std::stoi(vct.at(2)), vct.at(3));
+        if(vct.size() == 2 && (vct.at(1).compare("truncate") == 0 ) && (vct.at(2).compare("table") == 0 ) ) return truncate();
         return false;
     }
 
@@ -32,19 +38,21 @@ public:
         std::lock_guard<std::mutex> write_mutex(m_mutex_main);
         auto table = m_tables.find(strTable);
         if(table == m_tables.end()) {
-//            throw std::runtime_error(DB_ERR_NOTABLE);
             return false;
         }
         return table->second->insert_to_table(id, str);
     }
 
-    std::vector<std::tuple<size_t,std::string,std::string>> intersect(){
+    std::vector<std::tuple<size_t,std::string,std::string>> intersect(std::string &strFst, std::string &strSnd){
         std::vector<int> v_intersection;
         std::vector<std::tuple<size_t,std::string,std::string>> tpl;
 
         std::lock_guard<std::mutex> read_mutex(m_mutex_main);
-        auto ka = m_tables.at("A")->m_keys;
-        auto kb = m_tables.at("B")->m_keys;
+        auto ka = m_tables.at(strFst)->m_keys;
+        auto kb = m_tables.at(strSnd)->m_keys;
+
+//        auto ka = m_tables.at("A")->m_keys;
+//        auto kb = m_tables.at("B")->m_keys;
 
         std::set_intersection(ka.begin(), ka.end(),
                               kb.begin(), kb.end(),
@@ -85,10 +93,11 @@ public:
         return  tpl;
     }
 
-    void truncate(){
+    bool truncate(){
         std::lock_guard<std::mutex> write_mutex(m_mutex_main);
         m_tables.at("A")->truncate();
         m_tables.at("B")->truncate();
+        return true;
     }
 
 
