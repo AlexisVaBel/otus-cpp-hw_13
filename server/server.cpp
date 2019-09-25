@@ -6,11 +6,11 @@ Server::Server(boost::shared_ptr<boost::asio::io_service> io_service, short port
     m_acceptor(*m_io_service, boost::asio::ip::tcp::endpoint(tcp::v4(), port))
 {
     m_sesSet     = std::make_shared<sessions_set>();
-    m_threadPool = std::make_shared<ThreadPool>() ;
+    m_threadPool = std::make_shared<ThreadPool>(m_io_service) ;
     m_db         = std::make_shared<BasicDB>() ;
 
     auto backGroundThrs = std::thread::hardware_concurrency();
-    std::cout << "total available threads "<< backGroundThrs << std::endl; // if we need to get all EGGs for work?
+
     for(decltype (backGroundThrs) i{0}; i < backGroundThrs ; ++i){
         m_threadPool->add_worker();
     }

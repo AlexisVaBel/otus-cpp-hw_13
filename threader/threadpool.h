@@ -18,7 +18,10 @@
 class ThreadPool{
 public:
     // (de)constructs
-   ThreadPool() = default;
+    ThreadPool(boost::shared_ptr<boost::asio::io_service> io_service):io_service(io_service){
+
+    }
+//    ThreadPool(){};
    ~ThreadPool()
    {
        join_workers();
@@ -33,7 +36,7 @@ public:
    auto add_worker(){
        std::lock_guard<std::mutex>  mlock(threads_mutex);
        if(threads.empty()){
-           work = std::make_shared<boost::asio::io_service::work>(io_service);
+           work = std::make_shared<boost::asio::io_service::work>(*io_service);
        }
 
        is_new_thread_started    = false;
@@ -53,10 +56,11 @@ public:
            is_new_thread_started = true;
            for (;;) {
                try {
-                   io_service.run();
+                   std::cout << "running " << &io_service << std::endl;
+                   io_service->run();
                    break;
-               } catch (std::exception &exc) {
-                    std::cout << "error " <<exc.what() << std::endl;
+               } catch (std::exception &exc) {                   
+                    std::cout << "thread pool error "  << &io_service << " "<<exc.what() << std::endl;
                }
            }
 
@@ -99,17 +103,19 @@ public:
        std::lock_guard<std::mutex> mlock(threads_mutex);
        join_workers();
        threads.clear();
-       io_service.reset();
+       io_service->reset();
    }
 
    template<class Task>
    void add_task(Task&& task){
-       io_service.post(task);
+       io_service->post(task);
    }
 
 private:
-   boost::asio::io_service io_service;
+
+   boost::shared_ptr<boost::asio::io_service> io_service;
    std::shared_ptr<boost::asio::io_service::work> work;
+
    std::vector<std::thread> threads;
    mutable std::mutex threads_mutex;
 
