@@ -9,7 +9,7 @@
 Session::Session(boost::shared_ptr<boost::asio::io_service> ioService, std::shared_ptr<ThreadPool> threadPool, std::shared_ptr<BasicDB> db):m_ioService(ioService),
                  m_socket(std::make_shared<tcp::socket>(*ioService)), m_threadPool{threadPool}, m_db(db)
 {
-
+    m_procsDB = (DBProcessor::make(m_socket, m_db));
 }
 
 Session::~Session(){
@@ -58,16 +58,7 @@ void Session::handle_read(const boost::system::error_code &ecode, size_t bytes)
 }
 
 
-// not used here, but need for some needs
-//void Session::handle_write(const boost::system::error_code &ecode, size_t bytes)
-//{
-//    if(!ecode){
-//        m_socket.async_read_some(boost::asio::buffer(m_data, max_length),
-//                                 boost::bind(&Session::handle_read, this,
-//                                             _1, boost::asio::placeholders::bytes_transferred)
-//                                 );
-//    }
-//}
+
 
 void Session::on_command()
 {
@@ -77,7 +68,7 @@ void Session::on_command()
     std::string strElm;
     while( ss >> strElm)
         vct.push_back(strElm);
-    m_procsDB = (DBProcessor::make(m_socket, m_db));
+
     m_procsDB->process_operations(vct);
 
 

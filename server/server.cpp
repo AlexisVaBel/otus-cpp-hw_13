@@ -9,11 +9,11 @@ Server::Server(boost::shared_ptr<boost::asio::io_service> io_service, short port
     m_threadPool = std::make_shared<ThreadPool>(m_io_service) ;
     m_db         = std::make_shared<BasicDB>() ;
 
-//    auto backGroundThrs = std::thread::hardware_concurrency();
+    auto backGroundThrs = std::thread::hardware_concurrency();
 
-//    for(decltype (backGroundThrs) i{0}; i < backGroundThrs ; ++i){
-//        m_threadPool->add_worker();
-//    }
+    for(decltype (backGroundThrs) i{0}; i < backGroundThrs ; ++i){
+        m_threadPool->add_worker();
+    }
 
     std::shared_ptr<Session> new_session = std::make_shared<Session>(m_io_service, m_threadPool, m_db);
     m_acceptor.async_accept(new_session->socket(),

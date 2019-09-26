@@ -69,10 +69,30 @@ private:
     }
 
     bool intersect_tbls(){
+        auto rows = m_db->intersect();
+        for(auto row: rows){
+            std::cout << std::get<0>(row) << ", " << std::get<1>(row)<< ", " << std::get<2>(row) << std::endl;
+            std::string str = std::to_string(std::get<0>(row));
+            str.append(", ");
+            str.append((std::get<1>(row)));
+            str.append(", ");
+            str.append((std::get<2>(row)));
+            push_back(str);
+        }
         return true;
     }
 
     bool diff_tbls(){
+        auto rows = m_db->simm_difference();
+        for(auto row: rows){
+            std::cout << std::get<0>(row) << ", " << std::get<1>(row)<< ", " << std::get<2>(row) << std::endl;
+            std::string str = std::to_string(std::get<0>(row));
+            str.append(", ");
+            str.append((std::get<1>(row)));
+            str.append(", ");
+            str.append((std::get<2>(row)));
+            push_back(str);
+        }
         return true;
     }
 
@@ -95,13 +115,12 @@ private:
         m_socket->async_write_some(boost::asio::buffer(*it),
                              [self = this, it] (boost::system::error_code, size_t) {
                              self->m_lstData.erase(it);
-
         });
 
     }
 
     void push_back(const std::string& resp) {        
-        send(resp + 'n');
+        send(resp + '\n');
     }
 
     void push_back(std::string&& resp) {
