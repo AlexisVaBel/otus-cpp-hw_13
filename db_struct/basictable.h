@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 
+#include <iostream>
 
 const std::string TBL_ERR_DUPLICATE{"ERR duplicate"};
 class BasicTable{
@@ -15,7 +16,7 @@ public:
 
     }
 
-    bool insert_to_table(size_t id, std::string str){
+    bool insert_to_table(size_t id, std::string str){        
         auto t = m_mapRows.insert(std::pair<int, std::string>(id, str)).second;
         if (t) m_keys.insert(id);        
         return t;

@@ -19,7 +19,7 @@ static const std::string DB_CMD_SHOW ("SHOW");
 class DBProcessor: std::enable_shared_from_this<DBProcessor> {
 
     DBProcessor(std::shared_ptr<boost::asio::ip::tcp::socket> socket, std::shared_ptr<BasicDB> db):m_socket(socket), m_db(db){
-
+        std::cout << m_socket.get() << " :socket :db " << db.get() << std::endl;
     }
 public:
     ~DBProcessor(){}
@@ -39,10 +39,10 @@ public:
         if((strCmd.compare(DB_CMD_ISNERT) == 0 )) return insert_to_tbl(vct);
 
 
-//        if((strCmd.compare(DB_CMD_INTERSECT) == 0 )) return intersect_tbls();
-//        if((strCmd.compare(DB_CMD_SYM_DIFF) == 0 ))  return diff_tbls();
+        if((strCmd.compare(DB_CMD_INTERSECT) == 0 )) return intersect_tbls();
+        if((strCmd.compare(DB_CMD_SYM_DIFF) == 0 ))  return diff_tbls();
 
-//        if((strCmd.compare(DB_CMD_SHOW) == 0 ))  return show_tbl(vct.at(1));
+        if((strCmd.compare(DB_CMD_SHOW) == 0 ))  return show_tbl(vct.at(1));
 
         return false;
     }
@@ -53,8 +53,10 @@ private:
     bool insert_to_tbl(const std::vector<std::string> &vct){
         if(vct.size() != 4) return false;
         try {
-            m_db->insert(vct.at(1),std::stoi(vct.at(2)),vct.at(3) );
-            push_back("OK");
+            if(m_db->insert(vct.at(1),std::stoi(vct.at(2)),vct.at(3) )) push_back("OK");
+            else {
+                 push_back("BAD");
+            }
         } catch (std::error_code &er) {
             push_back("BAD");
             return false;
@@ -78,22 +80,27 @@ private:
         auto rows = m_db->show_rows(strName);
         for(auto row: rows){
             std::cout << std::get<0>(row) << ", " << std::get<1>(row) << std::endl;
-//            push_back(std::get<0>(row) + (std::get<1>(row)));
+            std::string str = std::to_string(std::get<0>(row));
+            str.append(", ");
+            str.append((std::get<1>(row)));
+            push_back(str);
         }
         return true;
     }
 
     void send(std::string && responce){
         auto it = m_lstData.insert(m_lstData.cend(), std::move(responce));
-        boost::asio::async_write(
-                    *m_socket,
-                    boost::asio::buffer(*it),
-                    [self = shared_from_this(), it](boost::system::error_code, size_t){
-                        self->m_lstData.erase(it);
-                    });
+
+
+        m_socket->async_write_some(boost::asio::buffer(*it),
+                             [self = this, it] (boost::system::error_code, size_t) {
+                             self->m_lstData.erase(it);
+
+        });
+
     }
 
-    void push_back(const std::string& resp) {
+    void push_back(const std::string& resp) {        
         send(resp + 'n');
     }
 

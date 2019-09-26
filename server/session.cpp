@@ -77,9 +77,9 @@ void Session::on_command()
     std::string strElm;
     while( ss >> strElm)
         vct.push_back(strElm);
-    m_procsDB = (DBProcessor::make(m_socket,m_db));
+    m_procsDB = (DBProcessor::make(m_socket, m_db));
     m_procsDB->process_operations(vct);
-//    if(m_procsDB->process_operations(vct)){}
+
 
 //    m_threadPool->add_task(
 //                [self = shared_from_this()] (){
@@ -89,9 +89,7 @@ void Session::on_command()
 //        while( ss >> strElm)
 //            vct.push_back(strElm);
 //        self->m_procsDB = (DBProcessor::make(self->m_socket,self->m_db));
-//        if(self->m_procsDB->process_operations(vct)){
-//        };
-
+//        self->m_procsDB->process_operations(vct);
 //    });
 
 }

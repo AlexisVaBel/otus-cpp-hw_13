@@ -25,12 +25,11 @@ public:
 
 
     bool insert (const std::string strTable, size_t id, std::string str){        
-        std::lock_guard<std::mutex> write_mutex(m_mutex_main);
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
+        std::lock_guard<std::mutex> write_mutex(m_mutex_main);        
         auto table = m_tables.find(strTable);
         if(table == m_tables.end()) {
             return false;
-        }
+        }        
         return table->second->insert_to_table(id, str);
     }
 
